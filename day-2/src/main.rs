@@ -79,20 +79,16 @@ fn parse_input(input: &str) -> IResult<&str, Input> {
     separated_list0(tag("\n"), parse_line)(input)
 }
 
-fn solve_part1(input: Input) -> Result<Output> {
-    let mut acc = 0;
-
-    'game: for game in input {
-        for hand in game.hands {
-            if hand.red > 12 || hand.green > 13 || hand.blue > 14 {
-                continue 'game;
-            }
-        }
-
-        acc += game.id;
-    }
-
-    Ok(acc)
+fn solve_part1(input: Input) -> Output {
+    input
+        .iter()
+        .filter(|game| {
+            game.hands
+                .iter()
+                .all(|hand| hand.red <= 12 && hand.green <= 13 && hand.blue <= 14)
+        })
+        .map(|game| game.id)
+        .sum()
 }
 
 fn solve_part2(input: Input) -> Output {
@@ -114,7 +110,7 @@ fn solve_part2(input: Input) -> Output {
 
 fn main() {
     let input = parse_input(include_str!("../real-input.txt")).unwrap().1;
-    println!("Part 1: {:?}", solve_part1(input).unwrap());
+    println!("Part 1: {:?}", solve_part1(input));
 
     let input = parse_input(include_str!("../real-input.txt")).unwrap().1;
     println!("Part 2: {:?}", solve_part2(input));
@@ -130,7 +126,7 @@ mod tests {
     #[test]
     fn part1() {
         assert_eq!(
-            solve_part1(parse_input(include_str!("../test-input.txt")).unwrap().1).unwrap(),
+            solve_part1(parse_input(include_str!("../test-input.txt")).unwrap().1),
             PART_1_EXPECTED_TEST_OUTPUT
         );
     }
