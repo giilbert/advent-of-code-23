@@ -32,7 +32,7 @@ enum Color {
 }
 
 const PART_1_EXPECTED_TEST_OUTPUT: Output = 8;
-const PART_2_EXPECTED_TEST_OUTPUT: Output = 281;
+const PART_2_EXPECTED_TEST_OUTPUT: Output = 2286;
 
 /// Returns a vector of lines from the input.
 fn parse_input(input: &str) -> IResult<&str, Input> {
@@ -95,16 +95,29 @@ fn solve_part1(input: Input) -> Result<Output> {
     Ok(acc)
 }
 
-fn solve_part2(input: Input) -> Result<Output> {
-    todo!()
+fn solve_part2(input: Input) -> Output {
+    input
+        .iter()
+        .map(|game| {
+            // find the max of each color
+            game.hands.iter().fold((0, 0, 0), |acc, hand| {
+                (
+                    acc.0.max(hand.red),
+                    acc.1.max(hand.green),
+                    acc.2.max(hand.blue),
+                )
+            })
+        })
+        .map(|(r, g, b)| r * g * b)
+        .sum()
 }
 
 fn main() {
     let input = parse_input(include_str!("../real-input.txt")).unwrap().1;
     println!("Part 1: {:?}", solve_part1(input).unwrap());
 
-    // let input = parse_input(include_str!("../real-input.txt")).unwrap().1;
-    // println!("Part 2: {:?}", solve_part2(input).unwrap());
+    let input = parse_input(include_str!("../real-input.txt")).unwrap().1;
+    println!("Part 2: {:?}", solve_part2(input));
 }
 
 #[cfg(test)]
@@ -122,11 +135,11 @@ mod tests {
         );
     }
 
-    // #[test]
-    // fn part2() {
-    //     assert_eq!(
-    //         solve_part2(parse_input(include_str!("../test-input-2.txt")).unwrap().1).unwrap(),
-    //         PART_2_EXPECTED_TEST_OUTPUT
-    //     );
-    // }
+    #[test]
+    fn part2() {
+        assert_eq!(
+            solve_part2(parse_input(include_str!("../test-input-2.txt")).unwrap().1),
+            PART_2_EXPECTED_TEST_OUTPUT
+        );
+    }
 }
