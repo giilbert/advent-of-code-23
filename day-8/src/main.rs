@@ -23,11 +23,20 @@ enum LeftRight {
     Right,
 }
 
+type ThreeChars = [char; 3];
+fn string_to_three_chars(s: &str) -> ThreeChars {
+    let mut chars = s.chars();
+    [
+        chars.next().unwrap(),
+        chars.next().unwrap(),
+        chars.next().unwrap(),
+    ]
+}
 #[derive(Debug)]
 struct Node {
-    pub name: String,
-    pub left: String,
-    pub right: String,
+    pub name: ThreeChars,
+    pub left: ThreeChars,
+    pub right: ThreeChars,
 }
 
 type Output = u64;
@@ -62,7 +71,11 @@ fn parse_input(input: &str) -> IResult<&str, Input> {
                         parse_three_letters(),
                         tag(")"),
                     )),
-                    |(name, _, left, _, right, _)| Node { name, left, right },
+                    |(name, _, left, _, right, _)| Node {
+                        name: string_to_three_chars(&name),
+                        left: string_to_three_chars(&left),
+                        right: string_to_three_chars(&right),
+                    },
                 ),
             ),
             eof,
@@ -78,18 +91,18 @@ fn solve_part1(input: Input) -> Output {
     });
 
     let mut visited = 0;
-    let mut current_node = "AAA";
+    let mut current_node = ['A', 'A', 'A'];
 
     for direction in input.sequence.iter().cloned().cycle() {
-        let node = nodes.get(current_node).unwrap();
+        let node = nodes.get(&current_node).unwrap();
         current_node = match direction {
-            LeftRight::Left => &node.left,
-            LeftRight::Right => &node.right,
+            LeftRight::Left => node.left,
+            LeftRight::Right => node.right,
         };
 
         visited += 1;
 
-        if current_node == "ZZZ" {
+        if current_node[0] == 'Z' && current_node[1] == 'Z' && current_node[2] == 'Z' {
             break;
         }
     }
