@@ -253,8 +253,8 @@ fn find_main_loop(
     visited
 }
 
-fn solve_part2(input: Input) -> Output {
-    let mut bigger_cells = input
+fn make_bigger(input: &Input) -> Vec<Vec<Cell>> {
+    input
         .cells
         .clone()
         .into_iter()
@@ -280,7 +280,33 @@ fn solve_part2(input: Input) -> Output {
         .collect::<Vec<_>>()
         .chunks(3 * input.cells[0].len())
         .map(|chunk| chunk.to_vec())
-        .collect::<Vec<_>>();
+        .collect::<Vec<_>>()
+}
+
+fn print_bigger_cell(bigger_cells: Vec<Vec<Cell>>) {
+    for line in bigger_cells.iter() {
+        for cell in line.iter() {
+            print!(
+                "{}",
+                match cell {
+                    Cell::NS => "|",
+                    Cell::WE => "-",
+                    Cell::NE => "L",
+                    Cell::NW => "J",
+                    Cell::SW => "7",
+                    Cell::SE => "F",
+                    Cell::Gr => ".",
+                    Cell::St => "S",
+                    Cell::IG => " ",
+                }
+            );
+        }
+        print!("\n");
+    }
+}
+
+fn solve_part2(input: Input) -> Output {
+    let mut bigger_cells = make_bigger(&input);
 
     let starting_position = bigger_cells
         .iter()
@@ -329,29 +355,33 @@ fn solve_part2(input: Input) -> Output {
         }
     }
 
-    for line in bigger_cells.iter() {
-        for cell in line.iter() {
-            print!(
-                "{}",
-                match cell {
-                    Cell::NS => "|",
-                    Cell::WE => "-",
-                    Cell::NE => "L",
-                    Cell::NW => "J",
-                    Cell::SW => "7",
-                    Cell::SE => "F",
-                    Cell::Gr => ".",
-                    Cell::St => "S",
-                    Cell::IG => " ",
-                }
-            );
-        }
-        print!("\n");
-    }
-
     println!("starting position = {:?}", starting_position);
 
     let main_loop_cells = find_main_loop(starting_position, &bigger_cells);
+
+    // remake bigger_cells but make non-main loop cells Gr
+    let input_cells_again = input
+        .cells
+        .iter()
+        .enumerate()
+        .map(|(y, line)| {
+            line.iter()
+                .enumerate()
+                .map(|(x, &cell)| {
+                    if main_loop_cells.contains(&(x * 3 + 1, y * 3 + 1)) {
+                        cell
+                    } else {
+                        Cell::Gr
+                    }
+                })
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+    let bigger_cells = make_bigger(&Map {
+        cells: input_cells_again,
+    });
+
+    print_bigger_cell(bigger_cells.clone());
 
     let x_length = bigger_cells[0].len();
     let y_length = bigger_cells.len();
@@ -425,17 +455,6 @@ fn solve_part2(input: Input) -> Output {
     let inside = actual_area - outside_cells - main_loop_cells.len() / 3;
     println!("  > inside = {}", inside);
 
-    // let mut outside_cells: Vec<Vec<bool>> = vec![vec![false; x_length]; y_length];
-    // for (x, y) in outside_visited {
-    //     outside_cells[y][x] = true;
-    // }
-    // for line in outside_cells.iter() {
-    //     for cell in line.iter() {
-    //         print!("{}", if *cell { "X" } else { " " });
-    //     }
-    //     print!("\n");
-    // }
-
     inside as u32
 }
 
@@ -443,8 +462,8 @@ fn main() {
     let input = parse_input(include_str!("../real-input.txt")).unwrap().1;
     println!("Part 1: {:?}", solve_part1(input));
 
-    // let input = parse_input(include_str!("../real-input.txt")).unwrap().1;
-    // println!("Part 2: {:?}", solve_part2(input));
+    let input = parse_input(include_str!("../real-input.txt")).unwrap().1;
+    println!("Part 2: {:?}", solve_part2(input));
 }
 
 #[cfg(test)]
